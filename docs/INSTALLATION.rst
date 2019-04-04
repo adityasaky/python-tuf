@@ -47,4 +47,4 @@ Installation instructions:
     be verified in pure Python.  To fully support RSA, Ed25519, ECDSA, and
     other crypto, you must install the extra dependencies declared by
     securesystemslib:
-    $ pip install securesystemslib[crypto,pynacl]
+    $ pip install securesystemslib[crypto]

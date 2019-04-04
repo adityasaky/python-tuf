@@ -1,7 +1,7 @@
 # CLI #
 
 The CLI requires a few dependencies and C extensions that can be installed with
-`pip install securesystemslib[crypto,pynacl]`.
+`pip install securesystemslib[crypto]`.
 
 [CLI_EXAMPLES.md](CLI_EXAMPLES.md) covers more complex examples.
 

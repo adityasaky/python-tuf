@@ -1253,7 +1253,7 @@ def generate_root_metadata(version, expiration_date, consistent_snapshot,
   # types, and that all dict keys are properly named.  Raise
   # 'securesystemslib.exceptions.FormatError' if any of the arguments are
   # improperly formatted.
-  tuf.formats.METADATAVERSION_SCHEMA.check_match(version)
+  tuf.formats.INTEGER_NATURAL_SCHEMA.check_match(version)
   securesystemslib.formats.ISO8601_DATETIME_SCHEMA.check_match(expiration_date)
   securesystemslib.formats.BOOLEAN_SCHEMA.check_match(consistent_snapshot)
   securesystemslib.formats.NAME_SCHEMA.check_match(repository_name)
@@ -1403,7 +1403,7 @@ def generate_targets_metadata(targets_directory, target_files, version,
   # Raise 'securesystemslib.exceptions.FormatError' if there is a mismatch.
   securesystemslib.formats.PATH_SCHEMA.check_match(targets_directory)
   securesystemslib.formats.PATH_FILEINFO_SCHEMA.check_match(target_files)
-  tuf.formats.METADATAVERSION_SCHEMA.check_match(version)
+  tuf.formats.INTEGER_NATURAL_SCHEMA.check_match(version)
   securesystemslib.formats.ISO8601_DATETIME_SCHEMA.check_match(expiration_date)
   securesystemslib.formats.BOOLEAN_SCHEMA.check_match(write_consistent_targets)
 
@@ -1824,7 +1824,7 @@ def write_metadata_file(metadata, filename, version_number, consistent_snapshot)
   # Raise 'securesystemslib.exceptions.FormatError' if the check fails.
   tuf.formats.SIGNABLE_SCHEMA.check_match(metadata)
   securesystemslib.formats.PATH_SCHEMA.check_match(filename)
-  tuf.formats.METADATAVERSION_SCHEMA.check_match(version_number)
+  tuf.formats.INTEGER_NATURAL_SCHEMA.check_match(version_number)
   securesystemslib.formats.BOOLEAN_SCHEMA.check_match(consistent_snapshot)
 
   # Verify the directory of 'filename', and convert 'filename' to its absolute

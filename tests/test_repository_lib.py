@@ -443,7 +443,7 @@ class TestRepositoryToolFunctions(unittest.TestCase):
                                                     consistent_snapshot=False)
     self.assertTrue(tuf.formats.ROOT_SCHEMA.matches(root_metadata))
 
-    root_keyids = tuf.roledb.get_role_keyids('root')
+    root_keyids = tuf.roledb.get_delegation_keyids('root')
     tuf.keydb._keydb_dict['default'][root_keyids[0]]['keytype'] = 'bad_keytype'
     self.assertRaises(securesystemslib.exceptions.Error, repo_lib.generate_root_metadata, 1,
                       expires, consistent_snapshot=False)
@@ -700,8 +700,8 @@ class TestRepositoryToolFunctions(unittest.TestCase):
 
     tuf.keydb.create_keydb_from_root_metadata(root_metadata, repository_name)
     tuf.roledb.create_roledb_from_root_metadata(root_metadata, repository_name)
-    root_keyids = tuf.roledb.get_role_keyids('root', repository_name)
-    targets_keyids = tuf.roledb.get_role_keyids('targets', repository_name)
+    root_keyids = tuf.roledb.get_delegation_keyids('root', repository_name)
+    targets_keyids = tuf.roledb.get_delegation_keyids('targets', repository_name)
 
     root_private_keypath = os.path.join(keystore_path, 'root_key')
     root_private_key = repo_lib.import_rsa_privatekey_from_file(root_private_keypath,

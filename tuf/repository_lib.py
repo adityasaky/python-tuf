@@ -104,6 +104,8 @@ def _generate_and_write_metadata(rolename, metadata_filename,
   specified 'rolename'.  It also increments the version number of 'rolename' if
   the 'increment_version_number' argument is True.
   """
+  
+  import pdb; pdb.set_trace()
 
   metadata = None
 
@@ -1277,7 +1279,7 @@ def generate_root_metadata(version, expiration_date, consistent_snapshot,
     keyids = []
 
     # Generate keys for the keyids listed by the role being processed.
-    for keyid in tuf.roledb.get_role_keyids(rolename, repository_name):
+    for keyid in tuf.roledb.get_delegation_keyids(rolename, repository_name):
       key = tuf.keydb.get_key(keyid, repository_name=repository_name)
 
       # If 'key' is an RSA key, it would conform to
@@ -1313,9 +1315,9 @@ def generate_root_metadata(version, expiration_date, consistent_snapshot,
 
     # Generate the authentication information Root establishes for each
     # top-level role.
-    role_threshold = tuf.roledb.get_role_threshold(rolename, repository_name)
+    role_threshold = tuf.roledb.get_delegation_threshold(rolename, repository_name)
     role_metadata = tuf.formats.build_dict_conforming_to_schema(
-        tuf.formats.ROLE_SCHEMA,
+        tuf.formats.DELEGATION_SCHEMA,
         keyids=keyids,
         threshold=role_threshold)
     roledict[rolename] = role_metadata

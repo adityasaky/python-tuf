@@ -920,6 +920,17 @@ class TestRepositoryToolFunctions(unittest.TestCase):
     obsolete_metadata = os.path.join(metadata_directory, 'obsolete_role.json')
     securesystemslib.util.ensure_parent_dir(obsolete_metadata)
     shutil.copyfile(targets_metadata, obsolete_metadata)
+    targets_metadata_contents = securesystemslib.util.load_json_file(targets_metadata)['signed']
+    targets_roleinfo = tuf.formats.build_dict_conforming_to_schema(
+      tuf.formats.TARGETS_SCHEMA,
+      spec_version=targets_metadata_contents['spec_version'],
+      version=targets_metadata_contents['version'],
+      expires=targets_metadata_contents['expires'],
+      targets=targets_metadata_contents['targets'],
+      delegation=targets_metadata_contents['delegations']
+    )
+    tuf.roledb.add_role("targets", targets_roleinfo,
+        repository_name=repository_name)
 
     # Verify that obsolete metadata (a metadata file exists on disk, but the
     # role is unavailable in 'tuf.roledb').  First add the obsolete

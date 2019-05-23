@@ -104,8 +104,6 @@ def _generate_and_write_metadata(rolename, metadata_filename,
   specified 'rolename'.  It also increments the version number of 'rolename' if
   the 'increment_version_number' argument is True.
   """
-  
-  import pdb; pdb.set_trace()
 
   metadata = None
 

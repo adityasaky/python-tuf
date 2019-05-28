@@ -1628,21 +1628,20 @@ def sign_metadata(metadata_object, keyids, filename, repository_name):
 
   <Arguments>
     metadata_object:
-      The metadata object to sign.  For example, 'metadata' might correspond to
-      'tuf.formats.ROOT_SCHEMA' or
-      'tuf.formats.TARGETS_SCHEMA'.
+      The metadata object to sign, conforming to tuf.formats.ANYROLE_SCHEMA
 
     keyids:
-      The keyids list of the signing keys.
+      A list of keyids indicating which keys should be used to sign the
+      metadata
 
     filename:
-      The intended filename of the signed metadata object.
-      For example, 'root.json' or 'targets.json'.  This function
-      does NOT save the signed metadata to this filename.
+      UNUSED ARGUMENT.
+      # TODO: Remove this from here and from all calls to sign_metadata in a
+      #        future PR.
 
     repository_name:
-      The name of the repository.  If not supplied, 'rolename' is added to the
-      'default' repository.
+      The name of the repository.  This is used to retrieve the key information
+      from the corresponding dictionary in keydb.
 
   <Exceptions>
     securesystemslib.exceptions.FormatError, if a valid 'signable' object could
@@ -1664,7 +1663,6 @@ def sign_metadata(metadata_object, keyids, filename, repository_name):
   # Raise 'securesystemslib.exceptions.FormatError' if the check fails.
   tuf.formats.ANYROLE_SCHEMA.check_match(metadata_object)
   securesystemslib.formats.KEYIDS_SCHEMA.check_match(keyids)
-  securesystemslib.formats.PATH_SCHEMA.check_match(filename)
   securesystemslib.formats.NAME_SCHEMA.check_match(repository_name)
 
   # Make sure the metadata is in 'signable' format.  That is,

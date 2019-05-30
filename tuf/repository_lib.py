@@ -111,7 +111,8 @@ def _generate_and_write_metadata(rolename, metadata_filename,
   tuf.formats.ANYROLE_SCHEMA.check_match(roleinfo)
 
   signing_keyids = tuf.roledb.get_signing_keyids(rolename, repository_name)
-  # Format check here for key ID schema (general hex check)?
+  for key in signing_keyids:
+    securesystemslib.formats.KEYID_SCHEMA.check_match(key)
 
   if not signing_keyids:
     logger.debug('Signing key IDs not found, will proceed without signing ' + 
@@ -120,55 +121,63 @@ def _generate_and_write_metadata(rolename, metadata_filename,
   current_version = roleinfo['version']
   if increment_version_number:
     roleinfo['version'] += 1
-    tuf.roledb.update_roleinfo(rolename, roleinfo,
-        repository_name=repository_name)
   else:
     logger.debug('Not incrementing ' + repr(rolename) + '\'s version number.')
 
   if tuf.roledb.is_top_level_rolename(rolename) and not allow_partially_signed:
     root_roleinfo = tuf.roledb.get_roleinfo('root', repository_name)
     threshold = root_roleinfo['roles'][rolename]['threshold']
-    # no previous_keyids possible
+
     signable = sign_metadata(roleinfo, signing_keyids, metadata_filename,
         repository_name)
-    if tuf.sig.verify(signable, rolename, repository_name, threshold,
-        signing_keyids):
-        _remove_invalid_and_duplicate_signatures(signable, repository_name)
-        # Root should always be written as if consistent_snapshot is True (i.e.,
-        # write <version>.root.json and root.json to disk).
-        if rolename == 'root':
-          consistent_snapshot = True
-        filename = write_metadata_file(signable, metadata_filename,
-            roleinfo['version'], consistent_snapshot)
-    # 'signable' contains an invalid threshold of signatures.
 
-    else:
-      # Since new metadata cannot be successfully written, restore the current
-      # version number.
-      roleinfo['version'] = current_version
+
+
+    def check_signatures_threshold_verify():
+      if rolename == "root" and len(last_used_signing_keyids) > 0:
+        if not tuf.sig.verify(signable, rolename, repository_name,
+            last_used_threshold, last_used_signing_keyids):
+            return False
+        
+        else:
+          logger.debug('Root is signed by a threshold of its previous keyids.')
+      
+      return tuf.sig.verify(signable, rolename, repository_name, threshold,
+          signing_keyids)
+
+
+
+    if rolename == "root":
+      consistent_snapshot = True
+      last_used_signing_keyids, last_used_threshold = \
+          tuf.roledb.get_last_root_keyids_threshold()
+    
+    if check_signatures_threshold_verify():
+      _remove_invalid_and_duplicate_signatures(signable, repository_name)
+
+      filename = write_metadata_file(signable, metadata_filename,
+          roleinfo['version'], consistent_snapshot)
       tuf.roledb.update_roleinfo(rolename, roleinfo,
           repository_name=repository_name)
-
-      # Note that 'signable' is an argument to tuf.UnsignedMetadataError().
+    else:
+      # should roleinfo version be rolled back here?
       raise tuf.exceptions.UnsignedMetadataError('Not enough'
           ' signatures for ' + repr(metadata_filename), signable)
+  
   else:
     signable = sign_metadata(roleinfo, signing_keyids, metadata_filename,
         repository_name)
     _remove_invalid_and_duplicate_signatures(signable, repository_name)
 
-    # Root should always be written as if consistent_snapshot is True (i.e.,
-    # <version>.root.json and root.json).
-    if rolename == 'root':
+    if rolename == "root":
       filename = write_metadata_file(signable, metadata_filename,
-          metadata['version'], consistent_snapshot=True)
-
+          roleinfo['version'], consistent_snapshot=True)
+    
     else:
       filename = write_metadata_file(signable, metadata_filename,
-          metadata['version'], consistent_snapshot)
+          roleinfo['version'], consistent_snapshot)
 
   return signable, filename
-
 
 
 

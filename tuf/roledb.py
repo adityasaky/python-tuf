@@ -73,6 +73,10 @@ _dirty_roles = {}
 _dirty_roles['default'] = set()
 
 
+_signing_keyids_queue = {}
+_signing_keyids_queue['default'] = {}
+
+
 def create_roledb_from_root_metadata(root_metadata, repository_name='default'):
   """
   <Purpose>
@@ -1306,3 +1310,15 @@ def is_top_level_rolename(rolename):
   top_level_roles = ['root', 'timestamp', 'snapshot', 'targets']
 
   return rolename.lower() in top_level_roles
+
+
+
+
+def get_signing_keyids(rolename, repository_name):
+  tuf.formats.ROLENAME_SCHEMA.check_match(rolename)
+  securesystemslib.formats.NAME_SCHEMA.check_match(repository_name)
+  if repository_name not in _signing_keyids_queue:
+    raise tuf.exceptions.RepositoryError("repository {} not found".format(repository_name))
+  if rolename not in _signing_keyids_queue[repository_name]:
+    raise tuf.exceptions.UnknownRoleError("{} not found in repository {}".format(rolename, repository_name))
+  return _signing_keyids_queue[repository_name][rolename]['keyids']

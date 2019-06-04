@@ -787,13 +787,9 @@ class Metadata(object):
       tuf.keydb.remove_key(key['keyid'], self._repository_name)
       tuf.keydb.add_key(key, repository_name=self._repository_name)
 
-    # Update the role's 'signing_keys' field in 'tuf.roledb.py'.
-    roleinfo = tuf.roledb.get_roleinfo(self.rolename, self._repository_name)
-    if key['keyid'] not in roleinfo['signing_keyids']:
-      roleinfo['signing_keyids'].append(key['keyid'])
+    tuf.roledb.add_signing_keyids([key['keyid']], self.rolename,
+        self._repository_name)
 
-      tuf.roledb.update_roleinfo(self.rolename, roleinfo,
-          repository_name=self._repository_name)
 
 
 

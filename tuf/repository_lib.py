@@ -111,8 +111,7 @@ def _generate_and_write_metadata(rolename, metadata_filename,
   tuf.formats.ANYROLE_SCHEMA.check_match(roleinfo)
 
   signing_keyids = tuf.roledb.get_signing_keyids(rolename, repository_name)
-  for key in signing_keyids:
-    securesystemslib.formats.KEYID_SCHEMA.check_match(key)
+  securesystemslib.formats.KEYIDS_SCHEMA.check_match(signing_keyids)
 
   if not signing_keyids:
     logger.debug('Signing key IDs not found, will proceed without signing ' + 

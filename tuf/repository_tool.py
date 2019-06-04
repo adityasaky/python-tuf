@@ -835,9 +835,6 @@ class Metadata(object):
     tuf.roledb.remove_signing_keyids([key['keyid']], self.rolename,
         self._repository_name)
 
-    else:
-      raise securesystemslib.exceptions.Error('Signing key not found.')
-
 
 
   def add_signature(self, signature, mark_role_as_dirty=True):

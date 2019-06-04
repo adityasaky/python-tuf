@@ -829,17 +829,12 @@ class Metadata(object):
     # 'securesystemslib.exceptions.FormatError' if any are improperly formatted.
     securesystemslib.formats.ANYKEY_SCHEMA.check_match(key)
 
-    # Update the role's 'signing_keys' field in 'tuf.roledb.py'.
-    roleinfo = tuf.roledb.get_roleinfo(self.rolename, self._repository_name)
-
     # TODO: Should we consider removing keys from keydb that are no longer
     # associated with any roles?  There could be many no-longer-used keys
     # stored in the keydb if not.  For now, just unload the key.
     if key['keyid'] in roleinfo['signing_keyids']:
-      roleinfo['signing_keyids'].remove(key['keyid'])
-
-      tuf.roledb.update_roleinfo(self.rolename, roleinfo,
-          repository_name=self._repository_name)
+      tuf.roledb.remove_signing_keyids([key['keyid']], self.rolename,
+          self._repository_name)
 
     else:
       raise securesystemslib.exceptions.Error('Signing key not found.')

@@ -832,9 +832,8 @@ class Metadata(object):
     # TODO: Should we consider removing keys from keydb that are no longer
     # associated with any roles?  There could be many no-longer-used keys
     # stored in the keydb if not.  For now, just unload the key.
-    if key['keyid'] in roleinfo['signing_keyids']:
-      tuf.roledb.remove_signing_keyids([key['keyid']], self.rolename,
-          self._repository_name)
+    tuf.roledb.remove_signing_keyids([key['keyid']], self.rolename,
+        self._repository_name)
 
     else:
       raise securesystemslib.exceptions.Error('Signing key not found.')

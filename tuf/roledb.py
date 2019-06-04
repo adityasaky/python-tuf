@@ -1315,10 +1315,26 @@ def is_top_level_rolename(rolename):
 
 
 def get_signing_keyids(rolename, repository_name):
+  global _signing_keyids_queue
   tuf.formats.ROLENAME_SCHEMA.check_match(rolename)
   securesystemslib.formats.NAME_SCHEMA.check_match(repository_name)
   if repository_name not in _signing_keyids_queue:
-    raise tuf.exceptions.RepositoryError("repository {} not found".format(repository_name))
+    raise tuf.exceptions.RepositoryError(
+        "repository {} not found".format(repository_name))
   if rolename not in _signing_keyids_queue[repository_name]:
-    raise tuf.exceptions.UnknownRoleError("{} not found in repository {}".format(rolename, repository_name))
+    raise tuf.exceptions.UnknownRoleError(
+        "{} not found in repository {}".format(rolename, repository_name))
   return _signing_keyids_queue[repository_name][rolename]['keyids']
+
+
+
+def add_signing_keyids(keyids, rolename, repository_name):
+  global _signing_keyids_queue
+  tuf.formats.ROLENAME_SCHEMA.check_match(rolename)
+  securesystemslib.formats.NAME_SCHEMA.check_match(repository_name)
+  securesystemslib.formats.KEYIDS_SCHEMA.check_match(keyids)
+
+  if 'keyids' in _signing_keyids_queue[repository_name][rolename]:
+    _signing_keyids_queue = list(set(_signing_keyids_queue).union(keyids))
+  else:
+    _signing_keyids_queue[repository_name][rolename]['keyids'] = keyids

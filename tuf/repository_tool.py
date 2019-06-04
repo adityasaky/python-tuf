@@ -566,7 +566,7 @@ class Metadata(object):
     self._repository_name = None
 
 
-  def add_verification_key(self, key, expires=None):
+  def add_verification_key(self, key, delegator, expires=None):
     """
     <Purpose>
       Add 'key' to the role.  Adding a key, which should contain only the
@@ -611,6 +611,18 @@ class Metadata(object):
     # types, and that all dict keys are properly named.  Raise
     # 'securesystemslib.exceptions.FormatError' if any are improperly formatted.
     securesystemslib.formats.ANYKEY_SCHEMA.check_match(key)
+
+    tuf.formats.ROLENAME_SCHEMA.check_match(delegator)
+
+    top_level_rolename = tuf.roledb.is_top_level_rolename(self.rolename)
+
+    if top_level_rolename != (delegator == 'root'):
+      raise tuf.exceptions.Error(
+          'Top-level roles can only be delegated to by root, and delegated '
+          'targets roles should only be delegated by other targets roles.  '
+          'Received a request for a delegation from role "' +
+          delegator + '" to role "' + self.rolename + '"; no '
+          'such delegation may exist.')
 
     # If 'expires' is unset, choose a default expiration for 'key'.  By
     # default, Root, Targets, Snapshot, and Timestamp keys are set to expire
@@ -669,20 +681,23 @@ class Metadata(object):
       logger.warning('Adding a verification key that has already been used.')
 
     keyid = key['keyid']
-    roleinfo = tuf.roledb.get_roleinfo(self.rolename, self._repository_name)
 
-    # Save the keyids that are being replaced since certain roles will need to
-    # re-sign metadata with these keys (e.g., root).  Use list() to make a copy
-    # of roleinfo['keyids'] to ensure we're modifying distinct lists.
-    previous_keyids = list(roleinfo['keyids'])
+    delegator_roleinfo = tuf.roledb.get_roleinfo(delegator,
+        repository_name=self._repository_name)
 
-    # Add 'key' to the role's entry in 'tuf.roledb.py', and avoid duplicates.
-    if keyid not in roleinfo['keyids']:
-      roleinfo['keyids'].append(keyid)
-      roleinfo['previous_keyids'] = previous_keyids
+    if top_level_rolename:
+      # this is where the root's current delegation keys must be stored separately?
+      delegator_roleinfo['roles'][self.rolenane]['keyids'].extend([keyid])
 
-      tuf.roledb.update_roleinfo(self._rolename, roleinfo,
-          repository_name=self._repository_name)
+    else:
+      delegator_roleinfo['delegations']['keys'][keyid] = key
+      for delegated_role in delegator_roleinfo['delegations']['roles']:
+        if delegated_role['name'] == self.rolename:
+          delegated_role['keyids'].extend([keyid])
+          break
+
+    tuf.roledb.update_roleinfo(delegator, delegator_roleinfo,
+        repository_name=self._repository_name)
 
 
 

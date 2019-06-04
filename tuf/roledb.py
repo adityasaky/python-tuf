@@ -1338,3 +1338,13 @@ def add_signing_keyids(keyids, rolename, repository_name):
     _signing_keyids_queue = list(set(_signing_keyids_queue).union(keyids))
   else:
     _signing_keyids_queue[repository_name][rolename]['keyids'] = keyids
+
+
+def remove_signing_keyids(keyids, rolename, repository_name):
+  global _signing_keyids_queue
+  tuf.formats.ROLENAME_SCHEMA.check_match(rolename)
+  securesystemslib.formats.NAME_SCHEMA.check_match(repository_name)
+  securesystemslib.formats.KEYIDS_SCHEMA.check_match(keyids)
+
+  _signing_keyids_queue[repository_name][rolename]['keyids'] = \
+      list(set(_signing_keyids_queue).difference(keyids))

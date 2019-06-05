@@ -685,15 +685,15 @@ class Metadata(object):
     delegator_roleinfo = tuf.roledb.get_roleinfo(delegator,
         repository_name=self._repository_name)
 
-    if top_level_rolename:
+    if delegator == 'root':
       # this is where the root's current delegation keys must be stored separately?
-      delegator_roleinfo['roles'][self.rolenane]['keyids'].extend([keyid])
+      delegator_roleinfo['roles'][self.rolename]['keyids'].append(keyid)
 
     else:
       delegator_roleinfo['delegations']['keys'][keyid] = key
       for delegated_role in delegator_roleinfo['delegations']['roles']:
         if delegated_role['name'] == self.rolename:
-          delegated_role['keyids'].extend([keyid])
+          delegated_role['keyids'].append(keyid)
           break
 
     tuf.roledb.update_roleinfo(delegator, delegator_roleinfo,

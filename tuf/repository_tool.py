@@ -686,6 +686,10 @@ class Metadata(object):
         repository_name=self._repository_name)
 
     if delegator == 'root':
+      # We need to identify what the structure of the delegator is. We can also
+      # check to see if top_level_rolename is true, but this is more explicit
+      # and clear.
+
       # this is where the root's current delegation keys must be stored separately?
       delegator_roleinfo['roles'][self.rolename]['keyids'].append(keyid)
 

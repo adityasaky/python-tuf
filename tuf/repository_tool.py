@@ -708,7 +708,7 @@ class Metadata(object):
 
 
 
-  def remove_verification_key(self, key):
+  def remove_verification_key(self, key, delegator):
     """
     <Purpose>
       Remove 'key' from the role's currently recognized list of role keys.
@@ -745,17 +745,40 @@ class Metadata(object):
     # 'securesystemslib.exceptions.FormatError' if any are improperly formatted.
     securesystemslib.formats.ANYKEY_SCHEMA.check_match(key)
 
+    tuf.formats.ROLENAME_SCHEMA.check_match(delegator)
+
+    top_level_rolename = tuf.roledb.is_top_level_rolename(self.rolename)
+
+    if top_level_rolename != (delegator == 'root'):
+      raise tuf.exceptions.Error(
+          'Top-level roles can only be delegated to by root, and delegated '
+          'targets roles should only be delegated by other targets roles.  '
+          'Received a request for a delegation from role "' +
+          delegator + '" to role "' + self.rolename + '"; no '
+          'such delegation may exist.')
+
     keyid = key['keyid']
-    roleinfo = tuf.roledb.get_roleinfo(self.rolename, self._repository_name)
 
-    if keyid in roleinfo['keyids']:
-      roleinfo['keyids'].remove(keyid)
+    delegator_roleinfo = tuf.roledb.get_roleinfo(delegator,
+        self._repository_name)
 
-      tuf.roledb.update_roleinfo(self._rolename, roleinfo,
-          repository_name=self._repository_name)
-
+    if delegator == 'root':
+      delegator_entry = delegator_roleinfo['roles'][self.rolename]['keyids']
     else:
+      for delegated_role in delegator_roleinfo['delegations']['roles']:
+        if delegated_role['name'] == self.rolename:
+          delegator_entry = delegated_role['keyids']
+          break
+    
+    if not delegator_entry.remove(keyid):
+    try:
+      delegator_entry.remove(keyid)
+    except ValueError:
       raise securesystemslib.exceptions.Error('Verification key not found.')
+
+    tuf.roledb.update_roleinfo(delegator, delegator_roleinfo,
+        repository_name=self._repository_name)
+
 
 
 

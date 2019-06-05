@@ -691,14 +691,17 @@ class Metadata(object):
       # and clear.
 
       # this is where the root's current delegation keys must be stored separately?
-      delegator_roleinfo['roles'][self.rolename]['keyids'].append(keyid)
+      delegator_entry = delegator_roleinfo['roles'][self.rolename]['keyids']
 
     else:
       delegator_roleinfo['delegations']['keys'][keyid] = key
       for delegated_role in delegator_roleinfo['delegations']['roles']:
         if delegated_role['name'] == self.rolename:
-          delegated_role['keyids'].append(keyid)
+          delegator_entry = delegated_role['keyids']
           break
+    
+    if keyid not in delegator_entry:
+      delegator_entry.append(keyid)
 
     tuf.roledb.update_roleinfo(delegator, delegator_roleinfo,
         repository_name=self._repository_name)

@@ -770,7 +770,6 @@ class Metadata(object):
           delegator_entry = delegated_role['keyids']
           break
     
-    if not delegator_entry.remove(keyid):
     try:
       delegator_entry.remove(keyid)
     except ValueError:

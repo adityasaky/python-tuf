@@ -1334,9 +1334,14 @@ def add_signing_keyids(keyids, rolename, repository_name):
   securesystemslib.formats.NAME_SCHEMA.check_match(repository_name)
   securesystemslib.formats.KEYIDS_SCHEMA.check_match(keyids)
 
-  if 'keyids' in _signing_keyids_queue[repository_name][rolename]:
-    _signing_keyids_queue = list(set(_signing_keyids_queue).union(keyids))
+  if repository_name in _signing_keyids_queue:
+    if 'keyids' in _signing_keyids_queue[repository_name].get(rolename):
+      _signing_keyids_queue = list(set(_signing_keyids_queue).union(keyids))
+    else:
+      _signing_keyids_queue[repository_name][rolename]['keyids'] = keyids
   else:
+    _signing_keyids_queue[repository_name] = {}
+    _signing_keyids_queue[repository_name][rolename] = {}
     _signing_keyids_queue[repository_name][rolename]['keyids'] = keyids
 
 
@@ -1346,5 +1351,7 @@ def remove_signing_keyids(keyids, rolename, repository_name):
   securesystemslib.formats.NAME_SCHEMA.check_match(repository_name)
   securesystemslib.formats.KEYIDS_SCHEMA.check_match(keyids)
 
-  _signing_keyids_queue[repository_name][rolename]['keyids'] = \
-      list(set(_signing_keyids_queue).difference(keyids))
+  if repository_name in _signing_keyids_queue:
+    if rolename in _signing_keyids_queue[repository_name]:
+      _signing_keyids_queue[repository_name][rolename]['keyids'] = \
+          list(set(_signing_keyids_queue).difference(keyids))

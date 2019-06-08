@@ -932,6 +932,13 @@ class TestRepositoryToolFunctions(unittest.TestCase):
     tuf.roledb.add_role("targets", targets_roleinfo,
         repository_name=repository_name)
 
+    key_filepath = os.path.join('repository_data', 'keystore', 'root_key')
+    root_rsa_key = repo_lib.import_rsa_privatekey_from_file(key_filepath,
+        'password')
+
+    tuf.roledb.add_signing_keyids([root_rsa_key['keyid']], 'root',
+        repository_name)
+
     # Verify that obsolete metadata (a metadata file exists on disk, but the
     # role is unavailable in 'tuf.roledb').  First add the obsolete
     # role to 'tuf.roledb' so that its metadata file can be written to disk.

@@ -1335,7 +1335,9 @@ def add_signing_keyids(keyids, rolename, repository_name):
   securesystemslib.formats.KEYIDS_SCHEMA.check_match(keyids)
 
   if repository_name in _signing_keyids_queue:
-    if 'keyids' in _signing_keyids_queue[repository_name].get(rolename):
+    if rolename not in _signing_keyids_queue[repository_name]:
+      _signing_keyids_queue[repository_name][rolename] = {}
+    if 'keyids' in _signing_keyids_queue[repository_name][rolename]:
       _signing_keyids_queue = list(set(_signing_keyids_queue).union(keyids))
     else:
       _signing_keyids_queue[repository_name][rolename]['keyids'] = keyids

@@ -951,6 +951,13 @@ class TestRepositoryToolFunctions(unittest.TestCase):
     tuf.roledb.add_role('obsolete_role', targets_roleinfo,
         repository_name=repository_name)
 
+    key_filepath = os.path.join('repository_data', 'keystore', 'targets_key')
+    targets_rsa_key = repo_lib.import_rsa_privatekey_from_file(key_filepath,
+        'password')
+
+    tuf.roledb.add_signing_keyids([targets_rsa_key['keyid']], 'obsolete_role',
+        repository_name)
+
     repo_lib._generate_and_write_metadata('obsolete_role', obsolete_metadata,
         targets_directory, metadata_directory, consistent_snapshot=False,
         filenames=None, repository_name=repository_name)
